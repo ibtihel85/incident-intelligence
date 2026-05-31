@@ -1,0 +1,73 @@
+{
+  "incident_id": "INC-CPU-2024-001",
+  "scenario": "cpu_spike",
+  "start_time": "2024-06-15T14:00:00Z",
+  "end_time": "2024-06-15T14:45:00Z",
+  "services": ["api-gateway", "worker-service"],
+  "metadata": {
+    "environment": "production",
+    "cluster": "eu-west-1",
+    "expected_root_cause": "RESOURCE_EXHAUSTION",
+    "expected_severity": "CRITICAL",
+    "description": "Runaway background ML training job consumed all CPU"
+  },
+  "metrics": {
+    "cpu_usage": [
+      {"timestamp": "2024-06-15T14:00:00Z", "value": 22.1},
+      {"timestamp": "2024-06-15T14:05:00Z", "value": 24.3},
+      {"timestamp": "2024-06-15T14:10:00Z", "value": 26.0},
+      {"timestamp": "2024-06-15T14:15:00Z", "value": 29.5},
+      {"timestamp": "2024-06-15T14:20:00Z", "value": 45.2},
+      {"timestamp": "2024-06-15T14:25:00Z", "value": 72.8},
+      {"timestamp": "2024-06-15T14:30:00Z", "value": 91.4},
+      {"timestamp": "2024-06-15T14:35:00Z", "value": 97.6},
+      {"timestamp": "2024-06-15T14:38:00Z", "value": 99.1},
+      {"timestamp": "2024-06-15T14:40:00Z", "value": 98.7},
+      {"timestamp": "2024-06-15T14:42:00Z", "value": 97.2},
+      {"timestamp": "2024-06-15T14:45:00Z", "value": 95.8}
+    ],
+    "memory_usage": [
+      {"timestamp": "2024-06-15T14:00:00Z", "value": 42.1},
+      {"timestamp": "2024-06-15T14:10:00Z", "value": 43.5},
+      {"timestamp": "2024-06-15T14:20:00Z", "value": 44.2},
+      {"timestamp": "2024-06-15T14:30:00Z", "value": 55.8},
+      {"timestamp": "2024-06-15T14:40:00Z", "value": 58.1},
+      {"timestamp": "2024-06-15T14:45:00Z", "value": 60.2}
+    ],
+    "error_rate": [
+      {"timestamp": "2024-06-15T14:00:00Z", "value": 0.1},
+      {"timestamp": "2024-06-15T14:10:00Z", "value": 0.2},
+      {"timestamp": "2024-06-15T14:20:00Z", "value": 1.5},
+      {"timestamp": "2024-06-15T14:30:00Z", "value": 18.4},
+      {"timestamp": "2024-06-15T14:35:00Z", "value": 35.2},
+      {"timestamp": "2024-06-15T14:40:00Z", "value": 42.1},
+      {"timestamp": "2024-06-15T14:45:00Z", "value": 38.7}
+    ],
+    "latency_ms": [
+      {"timestamp": "2024-06-15T14:00:00Z", "value": 85},
+      {"timestamp": "2024-06-15T14:10:00Z", "value": 92},
+      {"timestamp": "2024-06-15T14:20:00Z", "value": 210},
+      {"timestamp": "2024-06-15T14:30:00Z", "value": 850},
+      {"timestamp": "2024-06-15T14:35:00Z", "value": 2400},
+      {"timestamp": "2024-06-15T14:40:00Z", "value": 4200},
+      {"timestamp": "2024-06-15T14:45:00Z", "value": 3900}
+    ]
+  },
+  "logs": [
+    {"timestamp": "2024-06-15T14:20:10Z", "level": "WARN",  "service": "worker-service", "host": "worker-01", "message": "High CPU load detected: 72%, spawning additional threads"},
+    {"timestamp": "2024-06-15T14:25:05Z", "level": "WARN",  "service": "api-gateway",    "host": "gw-01",     "message": "Upstream response time exceeding 500ms SLA"},
+    {"timestamp": "2024-06-15T14:30:00Z", "level": "ERROR", "service": "api-gateway",    "host": "gw-01",     "message": "Request timeout after 2000ms — worker-service unresponsive"},
+    {"timestamp": "2024-06-15T14:30:12Z", "level": "ERROR", "service": "worker-service", "host": "worker-01", "message": "Thread pool exhausted: all 64 threads busy, rejecting new tasks"},
+    {"timestamp": "2024-06-15T14:32:00Z", "level": "ERROR", "service": "api-gateway",    "host": "gw-01",     "message": "Circuit breaker OPEN: worker-service failure rate 68%"},
+    {"timestamp": "2024-06-15T14:33:45Z", "level": "FATAL", "service": "worker-service", "host": "worker-01", "message": "CPU quota exceeded; kernel OOM killer invoked for PID 14821"},
+    {"timestamp": "2024-06-15T14:35:00Z", "level": "ERROR", "service": "api-gateway",    "host": "gw-01",     "message": "503 Service Unavailable returned to 1842 requests in last 60s"},
+    {"timestamp": "2024-06-15T14:37:20Z", "level": "ERROR", "service": "worker-service", "host": "worker-01", "message": "ML training job [job-id=train-8892] still running — expected completion was 14:20Z"},
+    {"timestamp": "2024-06-15T14:40:00Z", "level": "WARN",  "service": "worker-service", "host": "worker-01", "message": "CPU beginning to recover: 97.2%"},
+    {"timestamp": "2024-06-15T14:45:00Z", "level": "INFO",  "service": "worker-service", "host": "worker-01", "message": "Runaway training job terminated by operator. CPU stabilising."}
+  ],
+  "events": [
+    {"timestamp": "2024-06-15T14:19:00Z", "type": "job_start",    "description": "ML training job train-8892 started (scheduled: 14:00Z, delayed due to data availability)"},
+    {"timestamp": "2024-06-15T14:43:00Z", "type": "manual_action", "description": "On-call engineer terminated PID 14821 via kill -9"}
+  ]
+}
+ 

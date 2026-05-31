@@ -1,0 +1,58 @@
+{
+  "incident_id": "INC-NORMAL-2024-004",
+  "scenario": "normal_behavior",
+  "start_time": "2024-06-18T10:00:00Z",
+  "end_time": "2024-06-18T11:00:00Z",
+  "services": ["api-gateway", "user-service", "postgres"],
+  "metadata": {
+    "environment": "production",
+    "cluster": "eu-west-1",
+    "expected_root_cause": "UNKNOWN",
+    "expected_severity": "LOW",
+    "description": "Normal system operation — no incidents expected"
+  },
+  "metrics": {
+    "cpu_usage": [
+      {"timestamp": "2024-06-18T10:00:00Z", "value": 18.2},
+      {"timestamp": "2024-06-18T10:10:00Z", "value": 21.5},
+      {"timestamp": "2024-06-18T10:20:00Z", "value": 19.8},
+      {"timestamp": "2024-06-18T10:30:00Z", "value": 23.1},
+      {"timestamp": "2024-06-18T10:40:00Z", "value": 20.4},
+      {"timestamp": "2024-06-18T10:50:00Z", "value": 22.7},
+      {"timestamp": "2024-06-18T11:00:00Z", "value": 19.3}
+    ],
+    "memory_usage": [
+      {"timestamp": "2024-06-18T10:00:00Z", "value": 44.1},
+      {"timestamp": "2024-06-18T10:10:00Z", "value": 44.8},
+      {"timestamp": "2024-06-18T10:20:00Z", "value": 45.2},
+      {"timestamp": "2024-06-18T10:30:00Z", "value": 44.9},
+      {"timestamp": "2024-06-18T10:40:00Z", "value": 45.5},
+      {"timestamp": "2024-06-18T10:50:00Z", "value": 45.1},
+      {"timestamp": "2024-06-18T11:00:00Z", "value": 44.7}
+    ],
+    "error_rate": [
+      {"timestamp": "2024-06-18T10:00:00Z", "value": 0.1},
+      {"timestamp": "2024-06-18T10:15:00Z", "value": 0.0},
+      {"timestamp": "2024-06-18T10:30:00Z", "value": 0.2},
+      {"timestamp": "2024-06-18T10:45:00Z", "value": 0.1},
+      {"timestamp": "2024-06-18T11:00:00Z", "value": 0.0}
+    ],
+    "latency_ms": [
+      {"timestamp": "2024-06-18T10:00:00Z", "value": 78},
+      {"timestamp": "2024-06-18T10:15:00Z", "value": 82},
+      {"timestamp": "2024-06-18T10:30:00Z", "value": 75},
+      {"timestamp": "2024-06-18T10:45:00Z", "value": 88},
+      {"timestamp": "2024-06-18T11:00:00Z", "value": 79}
+    ]
+  },
+  "logs": [
+    {"timestamp": "2024-06-18T10:05:00Z", "level": "INFO", "service": "api-gateway",  "host": "gw-01",   "message": "Scheduled health check passed for all upstreams"},
+    {"timestamp": "2024-06-18T10:15:00Z", "level": "INFO", "service": "user-service", "host": "usr-01",  "message": "Cache warmed: 12,400 user profiles pre-loaded"},
+    {"timestamp": "2024-06-18T10:30:00Z", "level": "INFO", "service": "postgres",     "host": "db-01",   "message": "Autovacuum completed on table users (42 dead tuples removed)"},
+    {"timestamp": "2024-06-18T10:45:00Z", "level": "INFO", "service": "api-gateway",  "host": "gw-01",   "message": "Routine log rotation completed"},
+    {"timestamp": "2024-06-18T11:00:00Z", "level": "INFO", "service": "user-service", "host": "usr-01",  "message": "Hourly metrics summary: 14,200 requests served, 0 errors, p99=88ms"}
+  ],
+  "events": [
+    {"timestamp": "2024-06-18T10:00:00Z", "type": "routine_check", "description": "Scheduled monitoring window — no changes in flight"}
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "incident_id": "INC-MEM-2024-002",
+  "scenario": "memory_leak",
+  "start_time": "2024-06-16T06:00:00Z",
+  "end_time": "2024-06-16T12:00:00Z",
+  "services": ["recommendation-service", "postgres"],
+  "metadata": {
+    "environment": "production",
+    "cluster": "eu-central-1",
+    "expected_root_cause": "APPLICATION_BUG",
+    "expected_severity": "HIGH",
+    "description": "Python recommendation service leaking memory via unclosed DB connections"
+  },
+  "metrics": {
+    "memory_usage": [
+      {"timestamp": "2024-06-16T06:00:00Z", "value": 38.2},
+      {"timestamp": "2024-06-16T06:30:00Z", "value": 41.5},
+      {"timestamp": "2024-06-16T07:00:00Z", "value": 46.1},
+      {"timestamp": "2024-06-16T07:30:00Z", "value": 51.4},
+      {"timestamp": "2024-06-16T08:00:00Z", "value": 57.8},
+      {"timestamp": "2024-06-16T08:30:00Z", "value": 63.2},
+      {"timestamp": "2024-06-16T09:00:00Z", "value": 69.5},
+      {"timestamp": "2024-06-16T09:30:00Z", "value": 75.1},
+      {"timestamp": "2024-06-16T10:00:00Z", "value": 80.3},
+      {"timestamp": "2024-06-16T10:30:00Z", "value": 85.7},
+      {"timestamp": "2024-06-16T11:00:00Z", "value": 89.4},
+      {"timestamp": "2024-06-16T11:30:00Z", "value": 92.8},
+      {"timestamp": "2024-06-16T12:00:00Z", "value": 95.1}
+    ],
+    "cpu_usage": [
+      {"timestamp": "2024-06-16T06:00:00Z", "value": 28.1},
+      {"timestamp": "2024-06-16T07:00:00Z", "value": 31.4},
+      {"timestamp": "2024-06-16T08:00:00Z", "value": 34.9},
+      {"timestamp": "2024-06-16T09:00:00Z", "value": 38.2},
+      {"timestamp": "2024-06-16T10:00:00Z", "value": 52.4},
+      {"timestamp": "2024-06-16T11:00:00Z", "value": 61.8},
+      {"timestamp": "2024-06-16T12:00:00Z", "value": 72.3}
+    ],
+    "error_rate": [
+      {"timestamp": "2024-06-16T06:00:00Z", "value": 0.0},
+      {"timestamp": "2024-06-16T08:00:00Z", "value": 0.1},
+      {"timestamp": "2024-06-16T09:00:00Z", "value": 0.3},
+      {"timestamp": "2024-06-16T10:00:00Z", "value": 2.1},
+      {"timestamp": "2024-06-16T11:00:00Z", "value": 8.4},
+      {"timestamp": "2024-06-16T12:00:00Z", "value": 22.7}
+    ]
+  },
+  "logs": [
+    {"timestamp": "2024-06-16T07:45:00Z", "level": "WARN",  "service": "recommendation-service", "host": "rec-01", "message": "Heap usage at 51% — GC pressure increasing"},
+    {"timestamp": "2024-06-16T08:30:00Z", "level": "WARN",  "service": "recommendation-service", "host": "rec-01", "message": "Connection pool: 45/50 connections in use — approaching limit"},
+    {"timestamp": "2024-06-16T09:15:00Z", "level": "WARN",  "service": "recommendation-service", "host": "rec-01", "message": "Connection pool: 50/50 connections in use — POOL FULL"},
+    {"timestamp": "2024-06-16T09:45:00Z", "level": "ERROR", "service": "recommendation-service", "host": "rec-01", "message": "Failed to acquire database connection: pool exhausted after 5000ms"},
+    {"timestamp": "2024-06-16T10:10:00Z", "level": "ERROR", "service": "recommendation-service", "host": "rec-01", "message": "NullPointerException in CacheManager.evict() — cache reference is orphaned"},
+    {"timestamp": "2024-06-16T10:30:00Z", "level": "ERROR", "service": "recommendation-service", "host": "rec-01", "message": "GC overhead limit exceeded — application spending >98% time in GC"},
+    {"timestamp": "2024-06-16T11:00:00Z", "level": "ERROR", "service": "postgres",               "host": "db-01",  "message": "max_connections (100) reached — refusing new connections from rec-01"},
+    {"timestamp": "2024-06-16T11:20:00Z", "level": "ERROR", "service": "recommendation-service", "host": "rec-01", "message": "OutOfMemoryError: Java heap space — 50 requests dropped"},
+    {"timestamp": "2024-06-16T11:45:00Z", "level": "FATAL", "service": "recommendation-service", "host": "rec-01", "message": "Process killed by OOMKiller (kernel). Pod restarting."},
+    {"timestamp": "2024-06-16T12:00:00Z", "level": "INFO",  "service": "recommendation-service", "host": "rec-01", "message": "Service restarted. Memory at 38%. Monitoring for recurrence."}
+  ],
+  "events": [
+    {"timestamp": "2024-06-16T06:00:00Z", "type": "deployment", "description": "recommendation-service v2.14.0 deployed — includes new 'similar items' feature with in-memory cache"},
+    {"timestamp": "2024-06-16T11:45:00Z", "type": "pod_restart", "description": "Pod rec-01 OOMKilled and restarted by Kubernetes"}
+  ]
+}

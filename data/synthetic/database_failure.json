@@ -1,0 +1,73 @@
+{
+  "incident_id": "INC-DB-2024-003",
+  "scenario": "database_failure",
+  "start_time": "2024-06-17T22:00:00Z",
+  "end_time": "2024-06-17T22:40:00Z",
+  "services": ["order-service", "payment-service", "postgres", "pgbouncer"],
+  "metadata": {
+    "environment": "production",
+    "cluster": "us-east-1",
+    "expected_root_cause": "DEPENDENCY_FAILURE",
+    "expected_severity": "CRITICAL",
+    "description": "PostgreSQL connection pool exhaustion causing total service outage"
+  },
+  "metrics": {
+    "error_rate": [
+      {"timestamp": "2024-06-17T22:00:00Z", "value": 0.2},
+      {"timestamp": "2024-06-17T22:05:00Z", "value": 0.5},
+      {"timestamp": "2024-06-17T22:08:00Z", "value": 12.4},
+      {"timestamp": "2024-06-17T22:10:00Z", "value": 48.7},
+      {"timestamp": "2024-06-17T22:12:00Z", "value": 89.2},
+      {"timestamp": "2024-06-17T22:15:00Z", "value": 97.8},
+      {"timestamp": "2024-06-17T22:20:00Z", "value": 99.1},
+      {"timestamp": "2024-06-17T22:25:00Z", "value": 99.4},
+      {"timestamp": "2024-06-17T22:30:00Z", "value": 95.2},
+      {"timestamp": "2024-06-17T22:35:00Z", "value": 62.1},
+      {"timestamp": "2024-06-17T22:40:00Z", "value": 4.2}
+    ],
+    "latency_ms": [
+      {"timestamp": "2024-06-17T22:00:00Z", "value": 95},
+      {"timestamp": "2024-06-17T22:05:00Z", "value": 140},
+      {"timestamp": "2024-06-17T22:08:00Z", "value": 890},
+      {"timestamp": "2024-06-17T22:10:00Z", "value": 3200},
+      {"timestamp": "2024-06-17T22:12:00Z", "value": 8500},
+      {"timestamp": "2024-06-17T22:15:00Z", "value": 30000},
+      {"timestamp": "2024-06-17T22:20:00Z", "value": 30000},
+      {"timestamp": "2024-06-17T22:30:00Z", "value": 15200},
+      {"timestamp": "2024-06-17T22:35:00Z", "value": 3400},
+      {"timestamp": "2024-06-17T22:40:00Z", "value": 120}
+    ],
+    "cpu_usage": [
+      {"timestamp": "2024-06-17T22:00:00Z", "value": 18.5},
+      {"timestamp": "2024-06-17T22:10:00Z", "value": 20.1},
+      {"timestamp": "2024-06-17T22:20:00Z", "value": 22.4},
+      {"timestamp": "2024-06-17T22:30:00Z", "value": 21.8},
+      {"timestamp": "2024-06-17T22:40:00Z", "value": 19.2}
+    ],
+    "memory_usage": [
+      {"timestamp": "2024-06-17T22:00:00Z", "value": 52.3},
+      {"timestamp": "2024-06-17T22:20:00Z", "value": 54.1},
+      {"timestamp": "2024-06-17T22:40:00Z", "value": 53.7}
+    ]
+  },
+  "logs": [
+    {"timestamp": "2024-06-17T22:05:20Z", "level": "WARN",  "service": "pgbouncer",       "host": "pgb-01",  "message": "Connection pool utilisation at 85% (85/100 connections)"},
+    {"timestamp": "2024-06-17T22:07:45Z", "level": "WARN",  "service": "order-service",   "host": "ord-01",  "message": "Database query latency increased to 400ms (normal: 50ms)"},
+    {"timestamp": "2024-06-17T22:08:30Z", "level": "ERROR", "service": "pgbouncer",       "host": "pgb-01",  "message": "No available connections in pool — all 100 slots occupied"},
+    {"timestamp": "2024-06-17T22:09:00Z", "level": "ERROR", "service": "order-service",   "host": "ord-01",  "message": "database connection timeout after 5000ms — psycopg2.OperationalError"},
+    {"timestamp": "2024-06-17T22:09:05Z", "level": "ERROR", "service": "payment-service", "host": "pay-01",  "message": "database connection timeout after 5000ms — psycopg2.OperationalError"},
+    {"timestamp": "2024-06-17T22:09:12Z", "level": "ERROR", "service": "postgres",        "host": "db-01",   "message": "FATAL: remaining connection slots are reserved for non-replication superuser connections"},
+    {"timestamp": "2024-06-17T22:10:00Z", "level": "ERROR", "service": "order-service",   "host": "ord-01",  "message": "500 Internal Server Error returned for POST /api/orders — DB unavailable"},
+    {"timestamp": "2024-06-17T22:10:00Z", "level": "ERROR", "service": "payment-service", "host": "pay-01",  "message": "Payment transaction rolled back — cannot acquire DB connection"},
+    {"timestamp": "2024-06-17T22:12:00Z", "level": "FATAL", "service": "order-service",   "host": "ord-01",  "message": "Health check failing — service reporting UNHEALTHY to load balancer"},
+    {"timestamp": "2024-06-17T22:15:00Z", "level": "ERROR", "service": "postgres",        "host": "db-01",   "message": "Lock timeout on table orders — 47 transactions waiting on RowExclusiveLock"},
+    {"timestamp": "2024-06-17T22:30:00Z", "level": "INFO",  "service": "postgres",        "host": "db-01",   "message": "On-call DBA terminated 62 idle connections. Pool recovering."},
+    {"timestamp": "2024-06-17T22:35:00Z", "level": "INFO",  "service": "pgbouncer",       "host": "pgb-01",  "message": "Connection pool utilisation dropping: 38/100"},
+    {"timestamp": "2024-06-17T22:40:00Z", "level": "INFO",  "service": "order-service",   "host": "ord-01",  "message": "Service healthy. Error rate back to baseline."}
+  ],
+  "events": [
+    {"timestamp": "2024-06-17T22:04:00Z", "type": "traffic_spike",  "description": "Promotional campaign went live — traffic increased 6x from 500 to 3000 req/min"},
+    {"timestamp": "2024-06-17T22:29:00Z", "type": "manual_action",  "description": "DBA executed: SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle'"},
+    {"timestamp": "2024-06-17T22:38:00Z", "type": "config_change",  "description": "PgBouncer pool_size increased from 100 to 200; max_client_conn set to 500"}
+  ]
+}
